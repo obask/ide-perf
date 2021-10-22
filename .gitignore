@@ -12,3 +12,6 @@ build/
 /.idea/uiDesigner.xml
 /.idea/*.iml
 /.idea/modules.xml
+
+.idea/libraries-with-intellij-classes.xml
+.idea/runConfigurations.xml
