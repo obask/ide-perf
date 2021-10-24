@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2021 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.google.idea.perf.tracer.ui
 import com.google.idea.perf.tracer.CallTreeManager
 import com.google.idea.perf.tracer.CallTreeUtil
 import com.google.idea.perf.tracer.TracerController
+import com.google.idea.perf.tracer.TracerUserConfig
 import com.google.idea.perf.util.formatNsInMs
 import com.intellij.CommonBundle
 import com.intellij.ide.BrowserUtil
@@ -56,12 +57,7 @@ import javax.swing.JProgressBar
 import javax.swing.JSeparator
 import javax.swing.SwingConstants.HORIZONTAL
 
-// Things to improve:
-// * Optimization: only update the tracer tab that is currently visible.
-// * Optimization: fast path in updateCallTree() if the tree did not change.
-// * Reset UI overhead to 0 after 'clear' command.
-// * Focus traversal.
-
+// TODO(baskakov): updated description
 /**
  * This is the main tracer panel containing the command line, call tree view,
  * overhead labels, etc. It also polls for new call tree data in [updateCallTree].
@@ -78,6 +74,7 @@ class TracerPanel(
     private var showingEdtOnly = false
     private val listView: TracerTable
     private val treeView: TracerTree
+    private val configView: TracerUIConfig
     private val tracingOverheadLabel: JBLabel
     private val uiOverheadLabel: JBLabel
     private var uiOverhead = 0L
@@ -157,6 +154,13 @@ class TracerPanel(
             .setText("Tree")
             .setSideComponent(createTabSideComponent())
         tabs.addTab(treeTab)
+
+        // Config view.
+        configView = TracerUIConfig(TracerConfigModel())
+        val configTab = TabInfo(JBScrollPane(configView))
+            .setText("Config")
+            .setSideComponent(createTabSideComponent())
+        tabs.addTab(configTab)
 
         // Tracing overhead label.
         val overheadFont = JBFont
@@ -239,6 +243,7 @@ class TracerPanel(
         val stats = CallTreeUtil.computeFlatTracepointStats(treeSnapshot)
         listView.setTracepointStats(stats)
         treeView.setCallTree(treeSnapshot)
+        configView.setTracingConfig(TracerUserConfig.cloneUserTraceRequests())
 
         // Estimate tracing overhead.
         val tracingOverhead = CallTreeUtil.estimateTracingOverhead(treeSnapshot)

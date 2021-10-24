@@ -129,6 +129,7 @@ class TracerController(
                     }
                     is TraceTarget.Method -> {
                         runWithProgress { progress ->
+                            TracerUserConfig.addUserTraceRequest(command.target)
                             val clazz = command.target.className
                             val method = command.target.methodName ?: "*"
                             val methodPattern = MethodFqName(clazz, method, "*")
